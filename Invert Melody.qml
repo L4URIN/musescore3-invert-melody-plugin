@@ -5,7 +5,7 @@ MuseScore {
       onRun: {
             menuPath: "Invert Melody"
             description: "Invert Melody"
-            version: "1.0"
+            version: "1.1"
             //Create Cursor
             var crs=curScore.newCursor();
             crs.rewind(0);
@@ -33,7 +33,8 @@ MuseScore {
             var pitchPrev1=crs.element.notes[0].pitch;//Previouse note of staff 1
             var pitchCur1=crs.element.notes[0].pitch;//Current note of staff 1
             //Variable concerning duration
-            var durationDenominator=crs.element.duration.denominator;    
+            var durationDenominator=crs.element.duration.denominator; 
+            var x=true; 
             
             //Creating first note
             crs.staffIdx=1;
@@ -46,66 +47,73 @@ MuseScore {
             crs.next();
             durationDenominator=crs.element.duration.denominator;
             //Loop         
-            while(crs.element.notes){ 
-                  //Creating note      
-                  pitchCur0=crs.element.notes[0].pitch;
-                  pitchDiff=pitchPrev0-pitchCur0;
-                  pitchPrev0=crs.element.notes[0].pitch;
-                  crs.staffIdx=1;
-                  crs.setDuration(1,durationDenominator); 
-                  crs.addNote(pitchPrev1+pitchDiff);
-                  crs.prev();
-                  pitchCur1=crs.element.notes[0].pitch;
-                  //Set ZArray to Array of key
-                  if (crs.score.keysig==0)
-                        ZArray=CArray;
-                  if (crs.score.keysig==1)
-                        ZArray=GArray;
-                  if (crs.score.keysig==2)
-                        ZArray=DArray;
-                  if (crs.score.keysig==3)
-                        ZArray=AArray;
-                  if (crs.score.keysig==4)
-                        ZArray=EArray;
-                  if (crs.score.keysig==5)
-                        ZArray=BArray;
-                  if (crs.score.keysig==Math.abs(6))//Math.abs required, as F#=6, Gb=-6
-                        ZArray=GbArray;
-                  if (crs.score.keysig==-5)
-                        ZArray=DbArray;
-                  if (crs.score.keysig==-4)
-                        ZArray=AbArray;
-                  if (crs.score.keysig==-3)
-                        ZArray=EbArray;
-                  if (crs.score.keysig==-2)
-                        ZArray=BbArray;
-                  if (crs.score.keysig==-1)
-                        ZArray=FArray; 
-                  //Check: Is note included in ZArray?
-                  if (ZArray.indexOf(pitchCur1%12)==-1){
-                        //Check: Is interval major or minor?
-                        //Change intervals
-                        if (majInterv.indexOf(Math.abs(pitchDiff%12))==-1){
-                              if (pitchDiff>0)
-                                    pitchDiff=pitchDiff+1;
-                              else
-                                    pitchDiff=pitchDiff-1;
-                        }
-                        else if (minInterv.indexOf(Math.abs(pitchDiff%12))==-1){
-                              if (pitchDiff>0)
-                                    pitchDiff=pitchDiff-1;
-                              else
-                                    pitchDiff=pitchDiff+1;
-                        }
-                        //Create new note with corrected pitch      
+            while(x){
+                  if (crs.element.notes){
+                        //Creating note      
+                        pitchCur0=crs.element.notes[0].pitch;
+                        pitchDiff=pitchPrev0-pitchCur0;
+                        pitchPrev0=crs.element.notes[0].pitch;
+                        crs.staffIdx=1;
+                        crs.setDuration(1,durationDenominator); 
                         crs.addNote(pitchPrev1+pitchDiff);
                         crs.prev();
+                        pitchCur1=crs.element.notes[0].pitch;
+                        //Set ZArray to Array of key
+                        if (crs.score.keysig==0)
+                              ZArray=CArray;
+                        if (crs.score.keysig==1)
+                              ZArray=GArray;
+                        if (crs.score.keysig==2)
+                              ZArray=DArray;
+                        if (crs.score.keysig==3)
+                              ZArray=AArray;
+                        if (crs.score.keysig==4)
+                              ZArray=EArray;
+                        if (crs.score.keysig==5)
+                              ZArray=BArray;
+                        if (crs.score.keysig==Math.abs(6))//Math.abs required, as F#=6, Gb=-6
+                              ZArray=GbArray;
+                        if (crs.score.keysig==-5)
+                              ZArray=DbArray;
+                        if (crs.score.keysig==-4)
+                              ZArray=AbArray;
+                        if (crs.score.keysig==-3)
+                              ZArray=EbArray;
+                        if (crs.score.keysig==-2)
+                              ZArray=BbArray;
+                        if (crs.score.keysig==-1)
+                              ZArray=FArray; 
+                        //Check: Is note included in ZArray?
+                        if (ZArray.indexOf(pitchCur1%12)==-1){
+                              //Check: Is interval major or minor?
+                              //Change intervals
+                              if (majInterv.indexOf(Math.abs(pitchDiff%12))==-1){
+                                    if (pitchDiff>0)
+                                          pitchDiff=pitchDiff+1;
+                                    else
+                                          pitchDiff=pitchDiff-1;
+                              }
+                              else if (minInterv.indexOf(Math.abs(pitchDiff%12))==-1){
+                                    if (pitchDiff>0)
+                                          pitchDiff=pitchDiff-1;
+                                    else
+                                          pitchDiff=pitchDiff+1;
+                              }
+                              //Create new note with corrected pitch      
+                              crs.addNote(pitchPrev1+pitchDiff);
+                              crs.prev();
+                        }
+                        //Change variables
+                        //and move cursor               
+                        pitchPrev1=crs.element.notes[0].pitch;
+                        crs.staffIdx=0;
                   }
-                  //Change variables
-                  //and move cursor               
-                  pitchPrev1=crs.element.notes[0].pitch;
-                  crs.staffIdx=0;
-                  crs.next();
+                  else{
+                        
+                        crs.addRest();
+                        crs.staffIdx=0;
+                  }
+                  x=crs.next();
                   durationDenominator=crs.element.duration.denominator;
             }
       console.log("hello inversion");
