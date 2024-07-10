@@ -5,7 +5,7 @@ MuseScore {
       onRun: {
             menuPath: "Invert Melody"
             description: "Invert Melody"
-            version: "1.1"
+            version: "1.2"
             //Create Cursor
             var crs=curScore.newCursor();
             crs.rewind(0);
@@ -21,7 +21,7 @@ MuseScore {
             const AbArray=[0,1,3,5,7,8,10];//Ab
             const EbArray=[0,2,3,5,7,8,10];//Eb
             const BbArray=[0,2,3,5,7,9,10];//Bb
-            const FArray=[0,2,4,5,,7,9,10];//F
+            const FArray=[0,2,4,5,7,9,10];//F
             var ZArray={};//Variable list
             //List major/minor Intervals
             const majInterv=[2,4,6,9,11];
@@ -34,7 +34,9 @@ MuseScore {
             var pitchCur1=crs.element.notes[0].pitch;//Current note of staff 1
             //Variable concerning duration
             var durationDenominator=crs.element.duration.denominator; 
-            var x=true; 
+            //Variables for stop condition
+            var nextNoteExists=true; 
+            var curTick=0;
             
             //Creating first note
             crs.staffIdx=1;
@@ -47,53 +49,59 @@ MuseScore {
             crs.next();
             durationDenominator=crs.element.duration.denominator;
             //Loop         
-            while(x){
-                  if (crs.element.notes){
+            while(nextNoteExists) {
+                  curTick=crs.tick;//Update cursor tick
+                  nextNoteExists=crs.next();//Xheck for next note
+                  if (!nextNoteExists)
+                        crs.rewindToTick(curTick);
+                  else
+                        crs.prev();  
+                  if (crs.element.notes) {
                         //Creating note      
                         pitchCur0=crs.element.notes[0].pitch;
                         pitchDiff=pitchPrev0-pitchCur0;
                         pitchPrev0=crs.element.notes[0].pitch;
                         crs.staffIdx=1;
-                        crs.setDuration(1,durationDenominator); 
+                        crs.setDuration(1,durationDenominator);
                         crs.addNote(pitchPrev1+pitchDiff);
                         crs.prev();
                         pitchCur1=crs.element.notes[0].pitch;
                         //Set ZArray to Array of key
-                        if (crs.score.keysig==0)
+                        if (crs.keySignature==0)
                               ZArray=CArray;
-                        if (crs.score.keysig==1)
+                        if (crs.keySignature==1)
                               ZArray=GArray;
-                        if (crs.score.keysig==2)
+                        if (crs.keySignature==2)
                               ZArray=DArray;
-                        if (crs.score.keysig==3)
+                        if (crs.keySignature==3)
                               ZArray=AArray;
-                        if (crs.score.keysig==4)
+                        if (crs.keySignature==4)
                               ZArray=EArray;
-                        if (crs.score.keysig==5)
+                        if (crs.keySignature==5)
                               ZArray=BArray;
-                        if (crs.score.keysig==Math.abs(6))//Math.abs required, as F#=6, Gb=-6
+                        if (Math.abs(crs.keySignature)==6)//Math.abs required, as F#=6, Gb=-6
                               ZArray=GbArray;
-                        if (crs.score.keysig==-5)
+                        if (crs.keySignature==-5)
                               ZArray=DbArray;
-                        if (crs.score.keysig==-4)
+                        if (crs.keySignature==-4)
                               ZArray=AbArray;
-                        if (crs.score.keysig==-3)
+                        if (crs.keySignature==-3)
                               ZArray=EbArray;
-                        if (crs.score.keysig==-2)
+                        if (crs.keySignature==-2)
                               ZArray=BbArray;
-                        if (crs.score.keysig==-1)
+                        if (crs.keySignature==-1)
                               ZArray=FArray; 
                         //Check: Is note included in ZArray?
-                        if (ZArray.indexOf(pitchCur1%12)==-1){
+                        if (ZArray.indexOf(pitchCur1%12)==-1) {
                               //Check: Is interval major or minor?
                               //Change intervals
-                              if (majInterv.indexOf(Math.abs(pitchDiff%12))==-1){
+                              if (majInterv.indexOf(Math.abs(pitchDiff%12))==-1) {
                                     if (pitchDiff>0)
                                           pitchDiff=pitchDiff+1;
                                     else
                                           pitchDiff=pitchDiff-1;
                               }
-                              else if (minInterv.indexOf(Math.abs(pitchDiff%12))==-1){
+                              else if (minInterv.indexOf(Math.abs(pitchDiff%12))==-1) {
                                     if (pitchDiff>0)
                                           pitchDiff=pitchDiff-1;
                                     else
@@ -108,12 +116,11 @@ MuseScore {
                         pitchPrev1=crs.element.notes[0].pitch;
                         crs.staffIdx=0;
                   }
-                  else{
-                        
+                  else {
                         crs.addRest();
                         crs.staffIdx=0;
                   }
-                  x=crs.next();
+                  crs.next();
                   durationDenominator=crs.element.duration.denominator;
             }
       console.log("hello inversion");
